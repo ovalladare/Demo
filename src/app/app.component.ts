@@ -74,14 +74,18 @@ export class AppComponent {
       Password: this.password
     };
 
-    const options = {
+    const options: any = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json'
-      })
+      }),
+      responseType: 'text' // Lo pedimos como texto temporalmente para ver el error real
     };
 
     this.http.post(fullUrl, body, options).subscribe({
-      next: (response: any) => {
+      next: (res: any) => {
+        let response = res;
+        try { response = JSON.parse(res); } catch (e) { }
+
         this.loading = false;
         this.isConnected = true;
         this.sessionId = response?.SessionId || '';
@@ -89,10 +93,22 @@ export class AppComponent {
       },
       error: (err) => {
         this.loading = false;
-        if (err.status === 0) {
-          this.errorMessage = 'Error de conexión. Es posible que el servidor no sea accesible, que la URL sea incorrecta, o que haya un problema de CORS (Cross-Origin Resource Sharing). Revisa que ServiceLayer tenga CORS configurado.';
+        console.error("Detalle del Error DEV:", err);
+        // Si AWS nos devolvió la página web (index.html) por equivocación del proxy:
+        if (err.error && typeof err.error === 'string' && err.error.includes('<html')) {
+          this.errorMessage = `Error: Amplify devolvió una página HTML en vez de la conexión a SAP. Verifica que la primera regla de AWS Rewrite sea Source: /b1s/<*> y Target: https://iis.cococolima.com.mx:50000/b1s/<*>`;
+        } else if (err.status === 0) {
+          this.errorMessage = 'Error de conexión (CORS o fallo de red).';
         } else {
-          this.errorMessage = `Error al conectar: ${err.error?.error?.message?.value || err.message}`;
+          // Intentar parsear el error real
+          let errMsg = err.message;
+          try {
+            const parsedError = JSON.parse(err.error);
+            errMsg = parsedError.error?.message?.value || errMsg;
+          } catch (e) {
+            errMsg = err.error || errMsg;
+          }
+          this.errorMessage = `Error Code ${err.status}: ${errMsg.substring(0, 150)}...`;
         }
       }
     });
