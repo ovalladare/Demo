@@ -1,0 +1,128 @@
+<div class="presentation-container">
+  <!-- Glowing background effects -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">☁️</span> Amplify Demo
+    </div>
+    <div class="client-name">Project: <span class="highlight">Coco Colima</span></div>
+  </header>
+
+  <main class="main-content">
+    <section class="hero-section">
+      <h1 class="title">Potencia y Escalabilidad Oculta</h1>
+      <p class="subtitle">Descubre cómo AWS Amplify acelera la conexión y despliegue de soluciones robustas, conectando
+        directamente con tu backend SAP ServiceLayer de forma segura.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🚀</div>
+          <h3>Rápido Despliegue</h3>
+          <p>Lleva tus ideas a producción en minutos, sin lidiar con infraestructura compleja.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Conexión Segura</h3>
+          <p>Integración nativa con capas de seguridad avanzadas para proteger cada transacción con SAP.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Conexión Directa</h3>
+          <p>Prueba en vivo la integración con SAP B1 Service Layer usando este demo.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Connection Card -->
+    <section class="demo-section">
+      <div class="connection-card glass-panel">
+        <h2>Conexión ServiceLayer</h2>
+        <div *ngIf="!isConnected" class="animate-fade">
+          <p class="card-desc">Ingresa tus credenciales de SAP para probar la conectividad en vivo. Todo el poder de
+            integración desde un cliente construido con Amplify.</p>
+
+          <form class="connection-form" (ngSubmit)="onConnect()">
+            <div class="input-group">
+              <label for="url">URL ServiceLayer</label>
+              <input id="url" type="url" [(ngModel)]="url" name="url"
+                placeholder="https://iis.cococolima.com.mx:50000/b1s/v2/" required>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label for="companyDb">Base de Datos</label>
+                <input id="companyDb" type="text" [(ngModel)]="companyDb" name="companyDb" placeholder="SBODEMOMX"
+                  required>
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label for="username">Usuario</label>
+                <input id="username" type="text" [(ngModel)]="username" name="username" placeholder="manager" required>
+              </div>
+
+              <div class="input-group">
+                <label for="password">Contraseña</label>
+                <input id="password" type="password" [(ngModel)]="password" name="password" placeholder="••••••••"
+                  required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-connect" [class.loading]="loading" [disabled]="loading">
+              <span class="btn-text" *ngIf="!loading">Prueba de Conexión</span>
+              <span class="spinner" *ngIf="loading"></span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Feedback Messages -->
+        <div class="status-message success animate-fade" *ngIf="successMessage">
+          <span class="icon">✅</span>
+          {{ successMessage }}
+        </div>
+        <div class="status-message error animate-fade" *ngIf="errorMessage">
+          <span class="icon">❌</span>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Post Connection Features -->
+        <div class="post-connection animate-fade" *ngIf="isConnected">
+          <p class="card-desc mt-1">Conexión establecida. Ahora puedes consultar los datos directamente de SAP B1 hacia
+            la interfaz web usando ServiceLayer.</p>
+
+          <button (click)="fetchItems()" class="btn-connect secondary" [class.loading]="loadingItems"
+            [disabled]="loadingItems">
+            <span class="btn-text" *ngIf="!loadingItems">Consultar 5 Artículos</span>
+            <span class="spinner" *ngIf="loadingItems"></span>
+          </button>
+
+          <div class="status-message error animate-fade" *ngIf="itemsError">
+            <span class="icon">❌</span>
+            {{ itemsError }}
+          </div>
+
+          <div class="table-container animate-fade" *ngIf="items.length > 0">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Descripción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of items">
+                  <td>{{ item.ItemCode }}</td>
+                  <td>{{ item.ItemName }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,8 @@
+{
+  "/b1s/v2/*": {
+    "target": "https://iis.cococolima.com.mx:50000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
