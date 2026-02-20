@@ -61,10 +61,15 @@ export class AppComponent {
     localStorage.setItem('amplifyDemo_username', this.username);
     localStorage.setItem('amplifyDemo_password', this.password);
 
-    // Remove trailing slash if any and append /Login. 
     // To bypass CORS in local demo we use the reverse proxy set in proxy.conf.json 
-    // Therefore we will always hit the relative path '/b1s/v2' so that the proxy intercepts it 
-    const apiPath = '/b1s/v2';
+    // In local (production: false) we use the relative path '/b1s/v2' so proxy intercepts it
+    // In production (Amplify) we must use the full URL directly provided by the user
+    let apiPath = '/b1s/v2';
+
+    if (environment.production) {
+      // Remove trailing slash if any
+      apiPath = this.url.endsWith('/') ? this.url.slice(0, -1) : this.url;
+    }
 
     const fullUrl = `${apiPath}/Login`;
 
@@ -102,8 +107,11 @@ export class AppComponent {
     this.loadingItems = true;
     this.itemsError = '';
 
-    // We do exactly the same for GET /Items to bypass CORS
-    const apiPath = '/b1s/v2';
+    // We do exactly the same for GET /Items to bypass CORS in dev or use full url in prod
+    let apiPath = '/b1s/v2';
+    if (environment.production) {
+      apiPath = this.url.endsWith('/') ? this.url.slice(0, -1) : this.url;
+    }
 
     const itemsUrl = `${apiPath}/Items?$top=5&$select=ItemCode,ItemName`;
 
