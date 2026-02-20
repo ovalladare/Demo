@@ -61,15 +61,10 @@ export class AppComponent {
     localStorage.setItem('amplifyDemo_username', this.username);
     localStorage.setItem('amplifyDemo_password', this.password);
 
-    // To bypass CORS in local demo we use the reverse proxy set in proxy.conf.json 
-    // In local (production: false) we use the relative path '/b1s/v2' so proxy intercepts it
-    // In production (Amplify) we must use the full URL directly provided by the user
-    let apiPath = '/b1s/v2';
-
-    if (environment.production) {
-      // Remove trailing slash if any
-      apiPath = this.url.endsWith('/') ? this.url.slice(0, -1) : this.url;
-    }
+    // To bypass CORS both in local demo and production we use a reverse proxy
+    // In local we use proxy.conf.json 
+    // In production (Amplify) we must setUp a rewrite rule to redirect /b1s/v2 to the SAP URL
+    const apiPath = '/b1s/v2';
 
     const fullUrl = `${apiPath}/Login`;
 
@@ -107,11 +102,8 @@ export class AppComponent {
     this.loadingItems = true;
     this.itemsError = '';
 
-    // We do exactly the same for GET /Items to bypass CORS in dev or use full url in prod
+    // We do exactly the same for GET /Items to bypass CORS via proxy
     let apiPath = '/b1s/v2';
-    if (environment.production) {
-      apiPath = this.url.endsWith('/') ? this.url.slice(0, -1) : this.url;
-    }
 
     const itemsUrl = `${apiPath}/Items?$top=5&$select=ItemCode,ItemName`;
 
