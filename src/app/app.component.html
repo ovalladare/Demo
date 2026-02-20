@@ -88,6 +88,22 @@
           {{ errorMessage }}
         </div>
 
+        <!-- Guía de Certificado SSL Auto-Firmado -->
+        <div class="ssl-warning-card animate-fade" *ngIf="sslWarning">
+          <div class="ssl-warning-title">🔐 Acción Requerida: Certificado SSL</div>
+          <p>El servidor SAP usa un certificado SSL auto-firmado. El navegador bloquea estas peticiones por seguridad.
+            Para continuar:</p>
+          <ol class="ssl-steps">
+            <li>Haz clic en el botón de abajo para abrir el servidor SAP en una nueva pestaña.</li>
+            <li>En la nueva pestaña verás un aviso de "Sitio no seguro". Haz clic en <strong>"Avanzado"</strong> y luego
+              en <strong>"Continuar"</strong>.</li>
+            <li>Cierra esa pestaña y regresa aquí. Vuelve a intentar la conexión.</li>
+          </ol>
+          <a [href]="certAcceptUrl" target="_blank" rel="noopener noreferrer" class="btn-ssl">
+            🔓 Abrir SAP y Aceptar Certificado
+          </a>
+        </div>
+
         <!-- Post Connection Features -->
         <div class="post-connection animate-fade" *ngIf="isConnected">
           <p class="card-desc mt-1">Conexión establecida. Ahora puedes consultar los datos directamente de SAP B1 hacia

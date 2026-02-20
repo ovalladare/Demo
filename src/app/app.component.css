@@ -345,3 +345,62 @@ input:focus {
 .items-table tr:last-child td {
     border-bottom: none;
 }
+
+/* SSL Warning Card */
+.ssl-warning-card {
+    margin-top: 1.2rem;
+    background: rgba(255, 193, 7, 0.08);
+    border: 1px solid rgba(255, 193, 7, 0.35);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    backdrop-filter: blur(10px);
+}
+
+.ssl-warning-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffc107;
+    margin-bottom: 0.6rem;
+}
+
+.ssl-warning-card p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.8rem;
+}
+
+.ssl-steps {
+    font-size: 0.845rem;
+    color: var(--text-muted);
+    padding-left: 1.2rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.ssl-steps li {
+    line-height: 1.5;
+}
+
+.ssl-steps strong {
+    color: var(--text-light);
+}
+
+.btn-ssl {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    background: rgba(255, 193, 7, 0.15);
+    border: 1px solid rgba(255, 193, 7, 0.5);
+    border-radius: 8px;
+    color: #ffc107;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-ssl:hover {
+    background: rgba(255, 193, 7, 0.25);
+    border-color: rgba(255, 193, 7, 0.8);
+}
