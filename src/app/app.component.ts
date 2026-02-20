@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -35,6 +36,14 @@ export class AppComponent {
 
   constructor(private http: HttpClient) { }
 
+  ngOnInit() {
+    // Recuperar credenciales al cargar la página (Variables de Entorno o local)
+    this.url = environment.url || localStorage.getItem('amplifyDemo_url') || '';
+    this.companyDb = environment.companyDb || localStorage.getItem('amplifyDemo_companyDb') || '';
+    this.username = environment.username || localStorage.getItem('amplifyDemo_username') || '';
+    this.password = environment.password || localStorage.getItem('amplifyDemo_password') || '';
+  }
+
   onConnect() {
     this.successMessage = '';
     this.errorMessage = '';
@@ -45,6 +54,12 @@ export class AppComponent {
     }
 
     this.loading = true;
+
+    // Guardar credenciales para la próxima vez
+    localStorage.setItem('amplifyDemo_url', this.url);
+    localStorage.setItem('amplifyDemo_companyDb', this.companyDb);
+    localStorage.setItem('amplifyDemo_username', this.username);
+    localStorage.setItem('amplifyDemo_password', this.password);
 
     // Remove trailing slash if any and append /Login. 
     // To bypass CORS in local demo we use the reverse proxy set in proxy.conf.json 
