@@ -5,7 +5,7 @@ frontend:
       commands:
         - npm ci
         - mkdir -p src/environments
-        - echo "export const environment = { production: true, url: '${AMPLIFY_URL}', companyDb: '${AMPLIFY_COMPANYDB}', username: '${AMPLIFY_USERNAME}', password: '${AMPLIFY_PASSWORD}' };" > src/environments/environment.ts
+        - 'echo "export const environment = { production: true, url: ''${AMPLIFY_URL}'', companyDb: ''${AMPLIFY_COMPANYDB}'', username: ''${AMPLIFY_USERNAME}'', password: ''${AMPLIFY_PASSWORD}'' };" > src/environments/environment.ts'
     build:
       commands:
         - npm run build
