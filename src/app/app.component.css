@@ -49,6 +49,151 @@
     gap: 0.5rem;
 }
 
+.session-time {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    margin-left: 0.5rem;
+}
+
+/* version pequeña usada en header junto al proyecto */
+.session-time.small {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+}
+
+.btn-logout {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(220, 53, 69, 0.7);
+    border: 1px solid rgba(220, 53, 69, 0.5);
+    border-radius: 12px;
+    padding: 0.15rem 0.55rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-logout:hover {
+    background: rgba(220, 53, 69, 1);
+}
+
+/* tables */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.12);
+    color: #eee;
+}
+
+.data-table th {
+    background: rgba(255, 159, 1, 0.25); /* naranja claro */
+    color: rgb(255, 159, 1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table tr:nth-child(even) td {
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.data-table td {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.buttons-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pending-section {
+    margin-top: 1rem;
+    background: rgba(0,0,0,0.2);
+    padding: 0.8rem;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.row-modified td {
+    border-left: 2px solid rgba(255,159,1,0.6);
+}
+
+.dot-modified {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgb(255,159,1);
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.warehouse-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.inline-input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,159,1,0.5);
+    border-radius: 6px;
+    color: #fff;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.9rem;
+    width: 100px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    line-height: 1;
+}
+
+.save-all-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding: 0.8rem 1rem;
+    background: rgba(255,159,1,0.1);
+    border: 1px solid rgba(255,159,1,0.4);
+    border-radius: 8px;
+    color: rgb(255,159,1);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.small-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
 .logo-icon {
     font-size: 2rem;
 }
@@ -347,13 +492,25 @@ input:focus {
 }
 
 /* SSL Warning Card */
-.ssl-warning-card {
-    margin-top: 1.2rem;
-    background: rgba(255, 193, 7, 0.08);
-    border: 1px solid rgba(255, 193, 7, 0.35);
-    border-radius: 12px;
-    padding: 1.2rem 1.4rem;
-    backdrop-filter: blur(10px);
+.session-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    background: rgba(25, 135, 84, 0.1);
+    border: 1px solid rgba(25, 135, 84, 0.3);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #28a745;
+}
+
+.session-icon {
+    font-size: 1.2rem;
+}
+
+.session-text {
+    font-weight: 600;
 }
 
 .ssl-warning-title {

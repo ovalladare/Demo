@@ -3,6 +3,7 @@
     "target": "https://sap.tscloud.mx:50000",
     "secure": false,
     "changeOrigin": true,
+    "cookieDomainRewrite": "localhost",
     "logLevel": "debug"
   }
 }

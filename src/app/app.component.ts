@@ -28,12 +28,23 @@ export class AppComponent implements OnInit {
   // App State after connection
   isConnected: boolean = false;
   sessionId: string = '';
+  sessionExpiry: Date | null = null;
+  sessionTimeout: number = 0;
 
   // Articles Data
   items: any[] = [];
   loadingItems: boolean = false;
   itemsError: string = '';
+  // modifications pending for SAP
+  pendingUpdates: any[] = [];
 
+  // Clients Data
+  clients: any[] = [];
+  loadingClients: boolean = false;
+  clientsError: string = '';
+
+  // Current view ('items' or 'clients')
+  currentView: 'items' | 'clients' | '' = '';
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
@@ -41,11 +52,57 @@ export class AppComponent implements OnInit {
     this.companyDb = environment.companyDb || localStorage.getItem('amplifyDemo_companyDb') || '';
     this.username = environment.username || localStorage.getItem('amplifyDemo_username') || '';
     this.password = environment.password || localStorage.getItem('amplifyDemo_password') || '';
+
+    // Cargar sesión guardada
+    const savedSessionId = localStorage.getItem('amplifyDemo_sessionId');
+    const savedExpiry = localStorage.getItem('amplifyDemo_sessionExpiry');
+    const savedTimeout = localStorage.getItem('amplifyDemo_sessionTimeout');
+
+    if (savedSessionId && savedExpiry && savedTimeout) {
+      this.sessionId = savedSessionId;
+      this.sessionExpiry = new Date(savedExpiry);
+      this.sessionTimeout = parseInt(savedTimeout, 10);
+
+      if (this.isSessionValid()) {
+        this.isConnected = true;
+        this.successMessage = `Sesión restaurada. Expira en ${this.getTimeUntilExpiry()}`;
+      } else {
+        this.clearSession();
+      }
+    }
+  }
+
+  /** Verifica si la sesión actual es válida */
+  private isSessionValid(): boolean {
+    return this.sessionExpiry !== null && new Date() < this.sessionExpiry;
+  }
+
+  /** Obtiene el tiempo restante de la sesión en formato legible (minutos y segundos) */
+  getTimeUntilExpiry(): string {
+    if (!this.sessionExpiry) return '';
+    const now = new Date();
+    const diff = this.sessionExpiry.getTime() - now.getTime();
+    if (diff <= 0) return 'expirada';
+
+    const minutes = Math.floor(diff / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    return `${minutes}m ${seconds}s`;
   }
 
   /** URL base de SAP sin trailing slash ni /b1s/v2 */
   private getSapBase(): string {
     return this.url.trim().replace(/\/b1s\/(v1|v2)\/?$/i, '').replace(/\/$/, '');
+  }
+
+  /** Limpia la sesión guardada */
+  private clearSession() {
+    this.isConnected = false;
+    this.sessionId = '';
+    this.sessionExpiry = null;
+    this.sessionTimeout = 0;
+    localStorage.removeItem('amplifyDemo_sessionId');
+    localStorage.removeItem('amplifyDemo_sessionExpiry');
+    localStorage.removeItem('amplifyDemo_sessionTimeout');
   }
 
   onConnect() {
@@ -87,7 +144,17 @@ export class AppComponent implements OnInit {
         this.loading = false;
         this.isConnected = true;
         this.sessionId = response?.SessionId || '';
-        this.successMessage = `¡Conexión exitosa a ServiceLayer! SessionId: ${this.sessionId}`;
+
+        // Calcular expiración de sesión (SessionTimeout en minutos, default 30 min)
+        this.sessionTimeout = response?.SessionTimeout || 30; // default 30 min
+        this.sessionExpiry = new Date(Date.now() + this.sessionTimeout * 60 * 1000);
+
+        // Guardar sesión en localStorage
+        localStorage.setItem('amplifyDemo_sessionId', this.sessionId);
+        localStorage.setItem('amplifyDemo_sessionExpiry', this.sessionExpiry.toISOString());
+        localStorage.setItem('amplifyDemo_sessionTimeout', this.sessionTimeout.toString());
+
+        this.successMessage = `¡Conexión exitosa! Sesión expira en ${this.getTimeUntilExpiry()}`;
       },
       error: (err) => {
         this.loading = false;
@@ -112,14 +179,24 @@ export class AppComponent implements OnInit {
   }
 
   fetchItems() {
+    if (!this.isSessionValid()) {
+      this.clearSession();
+      this.errorMessage = 'La sesión ha expirado. Por favor, inicia sesión nuevamente.';
+      return;
+    }
+    this.currentView = 'items';
     this.loadingItems = true;
     this.itemsError = '';
     this.items = [];
+    this.pendingUpdates = [];
+    // clear clients
+    this.clients = [];
+    this.clientsError = '';
 
-    // OnHand no es seleccionable via $select en SAP OData — se excluye del $select
+    // OnHand no es seleccionable vía $select en SAP OData — se excluye del $select
     // Sólo pedimos campos que SAP permite seleccionar directamente
-    // Filtro por iniciales "BC": sintaxis OData correcta → startswith(ItemCode,'BC')
-    const itemsUrl = `${this.getSapBase()}/b1s/v2/Items?$filter=startswith(ItemCode,'A')&$top=20&$select=ItemCode,ItemName,DefaultWarehouse`;
+    // Sin filtro para mostrar cualquier artículo (cambia según necesites)
+    const itemsUrl = `${this.getSapBase()}/b1s/v2/Items?$top=20&$select=ItemCode,ItemName,DefaultWarehouse`;
 
     const options = {
       // withCredentials envía la cookie B1SESSION que SAP seteó al hacer login
@@ -132,13 +209,104 @@ export class AppComponent implements OnInit {
     this.http.get(itemsUrl, options).subscribe({
       next: (response: any) => {
         this.loadingItems = false;
-        this.items = response?.value || [];
+        this.items = (response?.value || []).map((it: any) => ({
+          ...it,
+          selectedWarehouse: it.DefaultWarehouse || '',
+          updated: false
+        }));
       },
       error: (err) => {
         this.loadingItems = false;
         let msg = err.message;
         try { msg = JSON.parse(err.error)?.error?.message?.value || msg; } catch (e) { }
         this.itemsError = `Error al obtener artículos (${err.status}): ${msg}`;
+      }
+    });
+  }
+
+  updateWarehouse(item: any) {
+    item.updated = true;
+    item.editing = false;
+    if (!this.pendingUpdates.find((p: any) => p.ItemCode === item.ItemCode)) {
+      this.pendingUpdates.push(item);
+    }
+  }
+
+  saveAllUpdates() {
+    if (!this.isSessionValid()) { this.clearSession(); return; }
+    const options = {
+      withCredentials: true,
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    };
+    const calls = this.pendingUpdates.map((item: any) => {
+      const url = `${this.getSapBase()}/b1s/v2/Items('${item.ItemCode}')`;
+      return this.http.patch(url, { DefaultWarehouse: item.selectedWarehouse }, options);
+    });
+
+    let completed = 0;
+    calls.forEach((call: any, idx: number) => {
+      call.subscribe({
+        next: () => {
+          this.pendingUpdates[idx].saved = true;
+          completed++;
+          if (completed === calls.length) {
+            this.successMessage = `${completed} artículo(s) actualizado(s) en SAP.`;
+            this.pendingUpdates = [];
+          }
+        },
+        error: (err: any) => {
+          let msg = err.message;
+          try { msg = JSON.parse(err.error)?.error?.message?.value || msg; } catch (e) { }
+          this.itemsError = `Error al actualizar ${this.pendingUpdates[idx].ItemCode}: ${msg}`;
+        }
+      });
+    });
+  }
+
+  logout() {
+    const options = {
+      withCredentials: true,
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    };
+    this.http.post(`${this.getSapBase()}/b1s/v2/Logout`, {}, options).subscribe({
+      next: () => this.clearSession(),
+      error: () => this.clearSession() // cerrar sesión localmente aunque falle SAP
+    });
+  }
+
+  fetchClients() {
+    if (!this.isSessionValid()) {
+      this.clearSession();
+      this.errorMessage = 'La sesión ha expirado. Por favor, inicia sesión nuevamente.';
+      return;
+    }
+    this.currentView = 'clients';
+    this.loadingClients = true;
+    this.clientsError = '';
+    this.clients = [];
+    this.pendingUpdates = [];
+    // clear items
+    this.items = [];
+    this.itemsError = '';
+
+    // Solicita clientes (BusinessPartners) filtrando por código iniciando con "C"
+    const clientsUrl = `${this.getSapBase()}/b1s/v2/BusinessPartners?$filter=startswith(CardCode,'C')&$top=20&$select=CardCode,CardName`;
+
+    const options = {
+      withCredentials: true,
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    };
+
+    this.http.get(clientsUrl, options).subscribe({
+      next: (response: any) => {
+        this.loadingClients = false;
+        this.clients = response?.value || [];
+      },
+      error: (err) => {
+        this.loadingClients = false;
+        let msg = err.message;
+        try { msg = JSON.parse(err.error)?.error?.message?.value || msg; } catch (e) { }
+        this.clientsError = `Error al obtener clientes (${err.status}): ${msg}`;
       }
     });
   }
