@@ -1,11 +1,24 @@
 version: 1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# REWRITE RULE REQUERIDA EN LA CONSOLA DE AMPLIFY
+# (App settings → Rewrites and redirects → Add rule — ANTES de la regla SPA)
+#
+#   Source address : /b1s/v2/<*>
+#   Target address : https://sap.tscloud.mx:50000/b1s/v2/<*>
+#   Type           : 200 (Rewrite)
+#
+# Esto hace que CloudFront actúe como reverse-proxy hacia SAP, eliminando
+# el error CORS que el navegador genera cuando llama a un dominio externo.
+# ─────────────────────────────────────────────────────────────────────────────
+
 frontend:
   phases:
     preBuild:
       commands:
         - npm ci
         - mkdir -p src/environments
-        - 'echo "export const environment = { production: true, url: ''${AMPLIFY_URL}'', companyDb: ''${AMPLIFY_COMPANYDB}'', username: ''${AMPLIFY_USERNAME}'', password: ''${AMPLIFY_PASSWORD}'' };" > src/environments/environment.ts'
+        - 'echo "export const environment = { production: true, url: ''https://sap.tscloud.mx:50000/b1s/v2'', companyDb: ''${AMPLIFY_COMPANYDB}'', username: ''${AMPLIFY_USERNAME}'', password: ''${AMPLIFY_PASSWORD}'', lambdaApiUrl: ''${AMPLIFY_LAMBDA_API_URL}'' };" > src/environments/environment.ts'
     build:
       commands:
         - npm run build

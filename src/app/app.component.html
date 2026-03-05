@@ -35,7 +35,7 @@
       </div>
     </section>
 
-    <!-- Interactive Connection Card -->
+    <!-- Connection Card -->
     <section class="demo-section">
       <div class="connection-card glass-panel">
         <h2>Conexión ServiceLayer</h2>
@@ -47,7 +47,7 @@
             <div class="input-group">
               <label for="url">URL ServiceLayer</label>
               <input id="url" type="url" [(ngModel)]="url" name="url"
-                placeholder="https://iis.cococolima.com.mx:50000/b1s/v2/" required>
+                placeholder="https://sap.tscloud.mx:50000/b1s/v2" required>
             </div>
 
             <div class="input-row">
@@ -88,57 +88,58 @@
           {{ errorMessage }}
         </div>
 
-        <!-- Guía de Certificado SSL Auto-Firmado -->
-        <div class="ssl-warning-card animate-fade" *ngIf="sslWarning">
-          <div class="ssl-warning-title">🔐 Acción Requerida: Certificado SSL</div>
-          <p>El servidor SAP usa un certificado SSL auto-firmado. El navegador bloquea estas peticiones por seguridad.
-            Para continuar:</p>
-          <ol class="ssl-steps">
-            <li>Haz clic en el botón de abajo para abrir el servidor SAP en una nueva pestaña.</li>
-            <li>En la nueva pestaña verás un aviso de "Sitio no seguro". Haz clic en <strong>"Avanzado"</strong> y luego
-              en <strong>"Continuar"</strong>.</li>
-            <li>Cierra esa pestaña y regresa aquí. Vuelve a intentar la conexión.</li>
-          </ol>
-          <a [href]="certAcceptUrl" target="_blank" rel="noopener noreferrer" class="btn-ssl">
-            🔓 Abrir SAP y Aceptar Certificado
-          </a>
-        </div>
-
-        <!-- Post Connection Features -->
+        <!-- Post-Connection Action -->
         <div class="post-connection animate-fade" *ngIf="isConnected">
           <p class="card-desc mt-1">Conexión establecida. Ahora puedes consultar los datos directamente de SAP B1 hacia
             la interfaz web usando ServiceLayer.</p>
-
-          <button (click)="fetchItems()" class="btn-connect secondary" [class.loading]="loadingItems"
-            [disabled]="loadingItems">
-            <span class="btn-text" *ngIf="!loadingItems">Consultar 5 Artículos</span>
+          <button (click)="fetchItems()" id="btn-fetch-items" class="btn-connect secondary"
+            [class.loading]="loadingItems" [disabled]="loadingItems">
+            <span class="btn-text" *ngIf="!loadingItems">📦 Consultar Artículos SAP</span>
             <span class="spinner" *ngIf="loadingItems"></span>
           </button>
-
-          <div class="status-message error animate-fade" *ngIf="itemsError">
-            <span class="icon">❌</span>
-            {{ itemsError }}
-          </div>
-
-          <div class="table-container animate-fade" *ngIf="items.length > 0">
-            <table class="items-table">
-              <thead>
-                <tr>
-                  <th>Código</th>
-                  <th>Descripción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of items">
-                  <td>{{ item.ItemCode }}</td>
-                  <td>{{ item.ItemName }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </div>
-
       </div>
     </section>
+
+    <!-- ── Artículos Section (fuera del connection card) ── -->
+    <section class="articles-section animate-fade" *ngIf="items.length > 0 || itemsError">
+
+      <div class="articles-header">
+        <div class="articles-title-group">
+          <span class="articles-icon">📦</span>
+          <div>
+            <h2 class="articles-title">Inventario SAP B1</h2>
+            <p class="articles-subtitle">Artículos consultados en tiempo real desde ServiceLayer</p>
+          </div>
+        </div>
+        <div class="articles-badge">{{ items.length }} artículos</div>
+      </div>
+
+      <!-- Error -->
+      <div class="status-message error animate-fade" *ngIf="itemsError">
+        <span class="icon">❌</span>{{ itemsError }}
+      </div>
+
+      <!-- Cards Grid -->
+      <div class="articles-grid" *ngIf="items.length > 0">
+        <div class="article-card" *ngFor="let item of items; let i = index">
+          <div class="article-card-header">
+            <span class="article-index">#{{ i + 1 }}</span>
+            <span class="article-code">{{ item.ItemCode }}</span>
+          </div>
+          <div class="article-body">
+            <div class="article-name">{{ item.ItemName }}</div>
+            <div class="article-details">
+              <div class="article-detail-chip warehouse-chip">
+                <span class="chip-label">🏭 Almacén</span>
+                <span class="chip-value">{{ item.DefaultWarehouse || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
   </main>
 </div>
